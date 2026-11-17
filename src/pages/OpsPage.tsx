@@ -40,19 +40,19 @@ export const OpsPage = () => {
     <>
       <section className="hero">
         <div>
-          <p className="eyebrow">Operations · HTTP polling every 2 s</p>
-          <h1>Cluster instrumentation</h1>
+          <p className="eyebrow">Operaciones · Consulta HTTP cada 2 s</p>
+          <h1>Instrumentación del clúster</h1>
           <p className="muted">
-            Eight stateless instances publish their own telemetry to Redis. This page reads the
-            shared view; no instance talks to another one.
+            Ocho instancias sin estado publican su propia telemetría en Redis. Esta página lee la
+            vista compartida; ninguna instancia habla con otra.
           </p>
         </div>
         <div className="hero-side">
           <Pill tone={ops.error ? 'bad' : data ? 'live' : 'warn'}>
-            {ops.error ? 'Metrics unavailable' : data ? `Source: ${data.source}` : 'Loading'}
+            {ops.error ? 'Métricas no disponibles' : data ? `Fuente: ${data.source}` : 'Cargando'}
           </Pill>
           <span className="tiny muted">
-            {ops.updatedAt ? `sampled ${timeAgo(ops.updatedAt)}` : 'waiting for the first sample'}
+            {ops.updatedAt ? `muestreado ${timeAgo(ops.updatedAt)}` : 'esperando la primera muestra'}
           </span>
           <span className="mono tiny">{API_URL.replace(/^https?:\/\//, '')}</span>
         </div>
@@ -62,97 +62,98 @@ export const OpsPage = () => {
         <div className="banner banner-bad">
           <strong>{ops.error}</strong>
           <p className="tiny">
-            The endpoint needs <span className="mono">METRICS_PUBLIC=true</span>, or an{' '}
-            <span className="mono">x-admin-token</span> header when it is false. Check that the
-            backend is reachable at <span className="mono">{API_URL}</span>.
+            El endpoint necesita <span className="mono">METRICS_PUBLIC=true</span>, o un encabezado{' '}
+            <span className="mono">x-admin-token</span> cuando es false. Verifica que el backend sea
+            accesible en <span className="mono">{API_URL}</span>.
           </p>
         </div>
       ) : null}
 
       {aggregate && aggregate.instances !== 8 ? (
         <div className="banner banner-warn">
-          {aggregate.instances} instance(s) reported in the last 20 s, not 8. During a deploy this is
-          expected; on a steady cluster it means an instance is not publishing telemetry.
+          {aggregate.instances} instancia(s) reportadas en los últimos 20 s, no 8. Durante un
+          despliegue es esperable; en un clúster estable significa que una instancia no publica
+          telemetría.
         </div>
       ) : null}
 
       {!data ? (
         <section className="card empty">
           <span className="spinner" aria-hidden="true" />
-          <h2>Reading cluster telemetry</h2>
-          <p className="muted">The dashboard polls /api/ops/metrics every two seconds.</p>
+          <h2>Leyendo la telemetría del clúster</h2>
+          <p className="muted">El panel consulta /api/ops/metrics cada dos segundos.</p>
         </section>
       ) : (
         <>
           <section className="grid grid-4">
             <article className="card stat">
-              <span className="stat-label">Instances</span>
+              <span className="stat-label">Instancias</span>
               <strong className="stat-value">
                 {formatNumber(aggregate?.instances)}
                 <small> / 8</small>
               </strong>
               <span className="stat-hint">
-                {formatNumber(aggregate?.degradedInstances)} in degraded mode
+                {formatNumber(aggregate?.degradedInstances)} en modo degradado
               </span>
             </article>
 
             <article className="card stat">
-              <span className="stat-label">Open connections</span>
+              <span className="stat-label">Conexiones abiertas</span>
               <strong className="stat-value">{formatNumber(aggregate?.totalConnections)}</strong>
               <span className="stat-hint">
-                {formatNumber(aggregate?.sseConnections)} SSE · {formatNumber(aggregate?.juryConnections)} jury ·{' '}
-                {formatNumber(aggregate?.verificationConnections)} verification
+                {formatNumber(aggregate?.sseConnections)} SSE · {formatNumber(aggregate?.juryConnections)} jurados ·{' '}
+                {formatNumber(aggregate?.verificationConnections)} verificación
               </span>
             </article>
 
             <article className="card stat">
-              <span className="stat-label">Event loop p99</span>
+              <span className="stat-label">p99 del bucle de eventos</span>
               <strong className={`stat-value tone-${loopTone(aggregate?.eventLoopP99Ms ?? 0)}`}>
                 {formatMs(aggregate?.eventLoopP99Ms)}
               </strong>
-              <span className="stat-hint">max {formatMs(aggregate?.eventLoopMaxMs)} across instances</span>
+              <span className="stat-hint">máx {formatMs(aggregate?.eventLoopMaxMs)} entre instancias</span>
             </article>
 
             <article className="card stat">
-              <span className="stat-label">Heap used</span>
+              <span className="stat-label">Heap en uso</span>
               <strong className="stat-value">
                 {formatDecimal(aggregate?.heapUsedMb, 1)}
                 <small> MB</small>
               </strong>
               <span className="stat-hint">
-                {formatNumber(aggregate?.deliveredEvents)} client deliveries so far
+                {formatNumber(aggregate?.deliveredEvents)} entregas a clientes hasta ahora
               </span>
             </article>
 
             <article className="card stat">
-              <span className="stat-label">Actas / minute</span>
+              <span className="stat-label">Actas / minuto</span>
               <strong className="stat-value">{formatNumber(aggregate?.actasPerMinute)}</strong>
               <span className="stat-hint">
-                {formatNumber(aggregate?.actasAccepted)} accepted · {formatNumber(aggregate?.actasDoubtful)} doubtful
+                {formatNumber(aggregate?.actasAccepted)} aceptadas · {formatNumber(aggregate?.actasDoubtful)} dudosas
               </span>
             </article>
 
             <article className="card stat">
-              <span className="stat-label">Topic messages / s</span>
+              <span className="stat-label">Mensajes de tema / s</span>
               <strong className="stat-value">{formatDecimal(aggregate?.messagesPerSecond, 2)}</strong>
               <span className="stat-hint">
-                {formatNumber(global?.backplane.published)} published vs {formatNumber(global?.backplane.naive)} naive
+                {formatNumber(global?.backplane.published)} publicados vs {formatNumber(global?.backplane.naive)} ingenuos
               </span>
             </article>
 
             <article className="card stat">
-              <span className="stat-label">Backplane reduction</span>
+              <span className="stat-label">Reducción del backplane</span>
               <strong className="stat-value">{formatPct(global?.backplane.reductionPct)}</strong>
               <span className="stat-hint">
-                actas × 8 instances would publish {formatNumber(global?.backplane.naive)} messages
+                actas × 8 instancias publicarían {formatNumber(global?.backplane.naive)} mensajes
               </span>
             </article>
 
             <article className="card stat">
-              <span className="stat-label">Delivery reduction</span>
+              <span className="stat-label">Reducción de entregas</span>
               <strong className="stat-value">{formatPct(global?.deliveryReductionPct)}</strong>
               <span className="stat-hint">
-                {formatNumber(global?.naiveDeliveries)} naive per-acta fan-out deliveries
+                {formatNumber(global?.naiveDeliveries)} entregas ingenuas (una por acta)
               </span>
             </article>
           </section>
@@ -160,14 +161,14 @@ export const OpsPage = () => {
           <section className="grid grid-3">
             <article className="card">
               <header className="card-head">
-                <h2 className="card-title">Connections</h2>
-                <span className="tiny muted">{history.length} samples</span>
+                <h2 className="card-title">Conexiones</h2>
+                <span className="tiny muted">{history.length} muestras</span>
               </header>
-              <Sparkline values={history.map((sample) => sample.connections)} tone="info" label="total sockets" />
+              <Sparkline values={history.map((sample) => sample.connections)} tone="info" label="sockets totales" />
             </article>
             <article className="card">
               <header className="card-head">
-                <h2 className="card-title">Event loop p99</h2>
+                <h2 className="card-title">p99 del bucle de eventos</h2>
                 <span className={`tiny tone-${loopTone(aggregate?.eventLoopP99Ms ?? 0)}`}>
                   {formatMs(aggregate?.eventLoopP99Ms)}
                 </span>
@@ -176,10 +177,10 @@ export const OpsPage = () => {
             </article>
             <article className="card">
               <header className="card-head">
-                <h2 className="card-title">Topic messages / s</h2>
-                <span className="tiny muted">aggregated windows</span>
+                <h2 className="card-title">Mensajes de tema / s</h2>
+                <span className="tiny muted">ventanas agregadas</span>
               </header>
-              <Sparkline values={history.map((sample) => sample.messages)} tone="ok" label="messages per second" />
+              <Sparkline values={history.map((sample) => sample.messages)} tone="ok" label="mensajes por segundo" />
             </article>
           </section>
 
@@ -187,32 +188,32 @@ export const OpsPage = () => {
             <section className="card">
               <header className="card-head">
                 <div>
-                  <h2 className="card-title">Per-instance view</h2>
+                  <h2 className="card-title">Vista por instancia</h2>
                   <p className="tiny muted">
-                    Each row is an independent process behind the load balancer, with no sticky
-                    sessions.
+                    Cada fila es un proceso independiente detrás del balanceador de carga, sin sesiones
+                    pegajosas.
                   </p>
                 </div>
                 <span className="tiny muted mono">
-                  {aggregate?.instances === 8 ? 'all eight online' : 'partial cluster'}
+                  {aggregate?.instances === 8 ? 'las ocho en línea' : 'clúster parcial'}
                 </span>
               </header>
               <div className="table-wrap">
                 <table className="table">
                   <thead>
                     <tr>
-                      <th>Instance</th>
+                      <th>Instancia</th>
                       <th>Redis</th>
                       <th className="num">SSE</th>
-                      <th className="num">Jury</th>
-                      <th className="num">Verify</th>
+                      <th className="num">Jurados</th>
+                      <th className="num">Verif.</th>
                       <th className="num">Msg/s</th>
                       <th className="num">p99</th>
-                      <th className="num">Max</th>
+                      <th className="num">Máx</th>
                       <th className="num">Heap</th>
-                      <th className="num">KB/conn</th>
+                      <th className="num">KB/conex</th>
                       <th className="num">Actas/min</th>
-                      <th className="num">Uptime</th>
+                      <th className="num">Tiempo activo</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -224,7 +225,7 @@ export const OpsPage = () => {
                           <td className="mono">{instance.instanceId}</td>
                           <td>
                             <Pill tone={instance.redisStatus === 'ready' ? 'live' : 'bad'}>
-                              {instance.redisStatus}
+                              {instance.redisStatus === 'ready' ? 'listo' : instance.redisStatus}
                             </Pill>
                           </td>
                           <td className="num">{formatNumber(instance.connections.sse)}</td>
@@ -249,8 +250,8 @@ export const OpsPage = () => {
             <div className="stack">
               <section className="card">
                 <header className="card-head">
-                  <h2 className="card-title">INP (real users)</h2>
-                  <span className="tiny muted">{formatNumber(data.inp.samples)} samples</span>
+                  <h2 className="card-title">INP (usuarios reales)</h2>
+                  <span className="tiny muted">{formatNumber(data.inp.samples)} muestras</span>
                 </header>
                 <dl className="kv">
                   <div className="kv-row">
@@ -262,61 +263,61 @@ export const OpsPage = () => {
                     <dd>{formatMs(data.inp.p95)}</dd>
                   </div>
                   <div className="kv-row">
-                    <dt>Worst</dt>
+                    <dt>Peor</dt>
                     <dd>{formatMs(data.inp.worst)}</dd>
                   </div>
                 </dl>
                 <p className="tiny muted">
-                  Reported by the public page through <span className="mono">/api/telemetry/inp</span>.
+                  Reportado por la página pública a través de <span className="mono">/api/telemetry/inp</span>.
                 </p>
               </section>
 
               <section className="card">
                 <header className="card-head">
-                  <h2 className="card-title">Durable audit</h2>
+                  <h2 className="card-title">Auditoría duradera</h2>
                   <Pill tone={data.supabase.enabled ? 'live' : 'idle'}>
-                    {data.supabase.enabled ? 'enabled' : 'disabled'}
+                    {data.supabase.enabled ? 'habilitada' : 'deshabilitada'}
                   </Pill>
                 </header>
                 <dl className="kv">
                   <div className="kv-row">
-                    <dt>Write-behind queue</dt>
-                    <dd>{formatNumber(data.supabase.queued)} rows</dd>
+                    <dt>Cola de escritura diferida</dt>
+                    <dd>{formatNumber(data.supabase.queued)} filas</dd>
                   </div>
                   <div className="kv-row">
-                    <dt>Persisted</dt>
+                    <dt>Persistidas</dt>
                     <dd>{formatNumber(data.supabase.persisted)} actas</dd>
                   </div>
                   <div className="kv-row">
-                    <dt>Dropped</dt>
+                    <dt>Descartadas</dt>
                     <dd>{formatNumber(data.supabase.dropped)}</dd>
                   </div>
                 </dl>
                 <p className="tiny muted">
-                  Supabase never sits on the acknowledgement path: the ack means Redis committed the
-                  acta.
+                  Supabase nunca está en la ruta del acuse de recibo: el acuse significa que Redis
+                  confirmó el acta.
                 </p>
               </section>
 
               <section className="card">
                 <header className="card-head">
-                  <h2 className="card-title">Snapshot</h2>
+                  <h2 className="card-title">Instantánea</h2>
                 </header>
                 <dl className="kv">
                   <div className="kv-row">
-                    <dt>Generated</dt>
+                    <dt>Generada</dt>
                     <dd>{timeAgo(Date.parse(data.generatedAt))}</dd>
                   </div>
                   <div className="kv-row">
-                    <dt>Source</dt>
+                    <dt>Fuente</dt>
                     <dd className="mono">{data.source}</dd>
                   </div>
                   <div className="kv-row">
-                    <dt>Instances reporting</dt>
+                    <dt>Instancias reportando</dt>
                     <dd>{formatNumber(aggregate?.instances)}</dd>
                   </div>
                   <div className="kv-row">
-                    <dt>Slow SSE clients closed</dt>
+                    <dt>Clientes SSE lentos cerrados</dt>
                     <dd>
                       {formatNumber(
                         data.instances.reduce((total, item) => total + item.totals.slowClientsClosed, 0),
@@ -324,7 +325,7 @@ export const OpsPage = () => {
                     </dd>
                   </div>
                   <div className="kv-row">
-                    <dt>SSE events skipped</dt>
+                    <dt>Eventos SSE omitidos</dt>
                     <dd>
                       {formatNumber(
                         data.instances.reduce((total, item) => total + item.totals.sseEventsSkipped, 0),
@@ -337,7 +338,7 @@ export const OpsPage = () => {
           </div>
 
           <details className="card raw-card">
-            <summary>Raw /api/ops/metrics snapshot</summary>
+            <summary>Instantánea sin procesar de /api/ops/metrics</summary>
             <pre className="raw">{JSON.stringify(data, null, 2)}</pre>
           </details>
         </>

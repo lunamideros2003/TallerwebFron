@@ -1,4 +1,4 @@
-const numberFormat = new Intl.NumberFormat('en-US');
+const numberFormat = new Intl.NumberFormat('es-CO');
 
 export const formatNumber = (value: number | null | undefined): string =>
   numberFormat.format(Math.round(Number(value ?? 0)));
@@ -30,17 +30,17 @@ export const formatClock = (value: string | number | null | undefined): string =
   if (value === null || value === undefined) return '--:--:--';
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return '--:--:--';
-  return date.toLocaleTimeString('en-GB', { hour12: false });
+  return date.toLocaleTimeString('es-CO', { hour12: false });
 };
 
 export const timeAgo = (timestamp: number | null | undefined): string => {
-  if (!timestamp) return 'never';
+  if (!timestamp) return 'nunca';
   const seconds = Math.max(0, Math.round((Date.now() - timestamp) / 1000));
-  if (seconds < 2) return 'just now';
-  if (seconds < 60) return `${seconds}s ago`;
+  if (seconds < 2) return 'justo ahora';
+  if (seconds < 60) return `hace ${seconds}s`;
   const minutes = Math.floor(seconds / 60);
-  if (minutes < 60) return `${minutes}m ago`;
-  return `${Math.floor(minutes / 60)}h ago`;
+  if (minutes < 60) return `hace ${minutes}m`;
+  return `hace ${Math.floor(minutes / 60)}h`;
 };
 
 export const shortId = (value: string, length = 8): string =>

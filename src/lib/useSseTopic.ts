@@ -78,7 +78,7 @@ export const useSseTopic = (topic: string): TopicStream => {
       setModel((prev) => ({
         ...prev,
         status: 'reconnecting',
-        error: `${reason}. Retrying in ${describeDelay(delay)}.`,
+        error: `${reason}. Reintentando en ${describeDelay(delay)}.`,
         nextRetryMs: delay,
       }));
       reconnectTimer = window.setTimeout(open, delay);
@@ -170,14 +170,14 @@ export const useSseTopic = (topic: string): TopicStream => {
         setModel((prev) => ({
           ...prev,
           status: 'degraded',
-          error: payload.message ?? `Degraded mode (${payload.reason ?? 'redis_unavailable'}).`,
+          error: payload.message ?? `Modo degradado (${payload.reason ?? 'redis_unavailable'}).`,
         }));
       });
 
       es.onerror = () => {
         es.close();
         if (source === es) source = null;
-        scheduleReconnect('The live stream was interrupted');
+        scheduleReconnect('La transmisión en vivo se interrumpió');
       };
     };
 

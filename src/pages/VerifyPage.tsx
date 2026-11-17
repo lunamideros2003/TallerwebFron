@@ -100,7 +100,7 @@ export const VerifyPage = () => {
         case 'init':
           applySnapshot(payload);
           setDegraded(false);
-          appendEvent('info', `Connected as ${payload.auditorId ?? auditorId} on ${payload.instanceId ?? 'an instance'}`);
+          appendEvent('info', `Conectado como ${payload.auditorId ?? auditorId} en ${payload.instanceId ?? 'una instancia'}`);
           break;
 
         case 'state':
@@ -108,40 +108,40 @@ export const VerifyPage = () => {
           break;
 
         case 'presence.updated':
-          appendEvent('info', `${payload.auditorId ?? 'An auditor'} ${payload.action ?? 'updated presence'}`);
+          appendEvent('info', `${payload.auditorId ?? 'Un auditor'} ${payload.action ?? 'actualizó su presencia'}`);
           requestRefresh();
           break;
 
         case 'case.claimed':
-          appendEvent('info', `${payload.auditorId ?? 'An auditor'} claimed ${payload.actaId ?? 'a case'}`);
+          appendEvent('info', `${payload.auditorId ?? 'Un auditor'} tomó ${payload.actaId ?? 'un caso'}`);
           requestRefresh();
           break;
 
         case 'case.requeued':
-          appendEvent('warn', `${payload.actaId ?? 'A case'} returned to the queue`);
+          appendEvent('warn', `${payload.actaId ?? 'Un caso'} volvió a la cola`);
           requestRefresh();
           break;
 
         case 'case.resolved':
-          appendEvent('info', `${payload.auditorId ?? 'An auditor'} completed ${payload.actaId ?? 'a case'}`);
+          appendEvent('info', `${payload.auditorId ?? 'Un auditor'} completó ${payload.actaId ?? 'un caso'}`);
           if (payload.auditorId === auditorId && payload.actaId) dropToken(payload.actaId);
           requestRefresh();
           break;
 
         case 'case.expired':
-          appendEvent('warn', `Lease expired for ${payload.actaId ?? 'a case'}; requeued`);
+          appendEvent('warn', `El arriendo expiró para ${payload.actaId ?? 'un caso'}; reencolada`);
           if (payload.previousOwner === auditorId && payload.actaId) dropToken(payload.actaId);
           requestRefresh();
           break;
 
         case 'case.lost':
           if (payload.actaId) dropToken(payload.actaId);
-          appendEvent('bad', `Lease lost for ${payload.actaId ?? 'a case'}`);
+          appendEvent('bad', `Arriendo perdido para ${payload.actaId ?? 'un caso'}`);
           requestRefresh();
           break;
 
         case 'auditor.released':
-          appendEvent('warn', `${payload.auditorId ?? 'An auditor'} disconnected; cases requeued`);
+          appendEvent('warn', `${payload.auditorId ?? 'Un auditor'} se desconectó; casos reencolados`);
           requestRefresh();
           break;
 
@@ -149,11 +149,11 @@ export const VerifyPage = () => {
           setClaiming(null);
           if (payload.ok && payload.actaId && payload.token) {
             setTokens((previous) => ({ ...previous, [payload.actaId!]: payload.token! }));
-            appendEvent('info', `You claimed ${payload.actaId}`);
+            appendEvent('info', `Tomaste ${payload.actaId}`);
           } else {
             appendEvent(
               'warn',
-              `Could not claim ${payload.actaId ?? 'the case'}: ${payload.reason ?? 'not available'}`,
+              `No se pudo tomar ${payload.actaId ?? 'el caso'}: ${payload.reason ?? 'no disponible'}`,
             );
           }
           requestRefresh();
@@ -162,9 +162,9 @@ export const VerifyPage = () => {
         case 'release.result':
           if (payload.ok) {
             if (payload.actaId) dropToken(payload.actaId);
-            appendEvent('info', `Released ${payload.actaId ?? 'the case'} back to the queue`);
+            appendEvent('info', `Liberaste ${payload.actaId ?? 'el caso'} de vuelta a la cola`);
           } else {
-            appendEvent('warn', `Release refused: ${payload.reason ?? 'not owner'}`);
+            appendEvent('warn', `Liberación rechazada: ${payload.reason ?? 'no es el propietario'}`);
           }
           requestRefresh();
           break;
@@ -172,9 +172,9 @@ export const VerifyPage = () => {
         case 'complete.result':
           if (payload.ok) {
             if (payload.actaId) dropToken(payload.actaId);
-            appendEvent('info', `Completed ${payload.actaId ?? 'the case'}`);
+            appendEvent('info', `Completaste ${payload.actaId ?? 'el caso'}`);
           } else {
-            appendEvent('warn', `Complete refused: ${payload.reason ?? 'not owner'}`);
+            appendEvent('warn', `Finalización rechazada: ${payload.reason ?? 'no es el propietario'}`);
           }
           requestRefresh();
           break;
@@ -183,7 +183,7 @@ export const VerifyPage = () => {
           setLastHeartbeat(Date.now());
           if (payload.lost && payload.lost.length > 0) {
             for (const actaId of payload.lost) dropToken(actaId);
-            appendEvent('bad', `Lease expired: ${payload.lost.join(', ')}`);
+            appendEvent('bad', `Arriendo expirado: ${payload.lost.join(', ')}`);
           }
           break;
 
@@ -193,11 +193,11 @@ export const VerifyPage = () => {
 
         case 'degraded':
           setDegraded(true);
-          appendEvent('bad', payload.message ?? 'Verification service is degraded');
+          appendEvent('bad', payload.message ?? 'El servicio de verificación está degradado');
           break;
 
         case 'error':
-          appendEvent('bad', payload.message ?? 'The server reported an error');
+          appendEvent('bad', payload.message ?? 'El servidor reportó un error');
           break;
 
         case 'pong':
@@ -252,7 +252,7 @@ export const VerifyPage = () => {
   const applyAuditor = () => {
     const value = auditorDraft.trim().toUpperCase();
     if (value.length < 3 || value.length > 40) {
-      appendEvent('bad', 'The auditor id must be between 3 and 40 characters.');
+      appendEvent('bad', 'El id del auditor debe tener entre 3 y 40 caracteres.');
       return;
     }
     try {
@@ -270,7 +270,7 @@ export const VerifyPage = () => {
     const sent = socket.send({ type: 'case.claim', actaId });
     if (!sent) {
       setClaiming(null);
-      appendEvent('bad', 'The socket is not connected. Claim not sent.');
+      appendEvent('bad', 'La conexión no está activa. No se envió la toma.');
     }
   };
 
@@ -295,25 +295,26 @@ export const VerifyPage = () => {
     <>
       <section className="hero">
         <div>
-          <p className="eyebrow">Verification channel · WebSocket</p>
-          <h1>Auditor console</h1>
+          <p className="eyebrow">Canal de verificación · WebSocket</p>
+          <h1>Consola del auditor</h1>
           <p className="muted">
-            Doubtful actas are claimed atomically with a 60 s lease. Presence, queue and ownership
-            live in Redis, so the console behaves the same on any of the eight instances.
+            Las actas dudosas se toman de forma atómica con un arriendo de 60 s. La presencia, la cola
+            y la propiedad viven en Redis, así que la consola se comporta igual en cualquiera de las
+            ocho instancias.
           </p>
         </div>
         <div className="hero-side">
           <Pill tone={toneForStream(socket.status)} title={socket.detail}>
-            {socket.status === 'open' ? 'Socket open' : socket.status === 'connecting' ? 'Connecting' : 'Reconnecting'}
+            {socket.status === 'open' ? 'Conexión abierta' : socket.status === 'connecting' ? 'Conectando' : 'Reconectando'}
           </Pill>
-          {degraded ? <Pill tone="bad">Degraded</Pill> : null}
-          <span className="tiny muted">heartbeat {timeAgo(lastHeartbeat)}</span>
+          {degraded ? <Pill tone="bad">Degradado</Pill> : null}
+          <span className="tiny muted">latido {timeAgo(lastHeartbeat)}</span>
         </div>
       </section>
 
       <section className="card auditor-bar">
         <label className="field compact">
-          <span className="field-label">Auditor id</span>
+          <span className="field-label">Id del auditor</span>
           <input
             value={auditorDraft}
             onChange={(event) => setAuditorDraft(event.target.value)}
@@ -321,24 +322,24 @@ export const VerifyPage = () => {
           />
         </label>
         <button type="button" className="btn btn-primary" onClick={applyAuditor}>
-          Connect as this auditor
+          Conectar con este auditor
         </button>
         <button
           type="button"
           className="btn btn-ghost"
           onClick={() => {
             const sent = socket.send({ type: 'queue.refresh' });
-            appendEvent(sent ? 'info' : 'bad', sent ? 'Queue refresh requested' : 'Socket is not connected');
+            appendEvent(sent ? 'info' : 'bad', sent ? 'Actualización de cola solicitada' : 'La conexión no está activa');
           }}
         >
-          Refresh queue
+          Actualizar cola
         </button>
         <div className="topic-meta">
-          <span className="tiny muted">Instance</span>
+          <span className="tiny muted">Instancia</span>
           <span className="mono">{instanceId ?? '—'}</span>
         </div>
         <div className="topic-meta">
-          <span className="tiny muted">Lease / heartbeat</span>
+          <span className="tiny muted">Arriendo / latido</span>
           <span className="mono">
             {formatDuration(leaseMs)} / {formatDuration(heartbeatMs)}
           </span>
@@ -347,31 +348,31 @@ export const VerifyPage = () => {
 
       {degraded ? (
         <div className="banner banner-bad">
-          Verification is running in degraded mode. Claims fail cleanly and the console retries; no
-          case is silently lost.
+          La verificación funciona en modo degradado. Las tomas fallan de forma controlada y la
+          consola reintenta; ningún caso se pierde en silencio.
         </div>
       ) : null}
 
       <section className="grid grid-4">
         <article className="card stat">
-          <span className="stat-label">Pending cases</span>
+          <span className="stat-label">Casos pendientes</span>
           <strong className="stat-value">{formatNumber(counts.pending)}</strong>
-          <span className="stat-hint">Priority queue ordered by mismatch size</span>
+          <span className="stat-hint">Cola de prioridad ordenada por tamaño del descuadre</span>
         </article>
         <article className="card stat">
-          <span className="stat-label">In progress</span>
+          <span className="stat-label">En progreso</span>
           <strong className="stat-value">{formatNumber(counts.active)}</strong>
-          <span className="stat-hint">Claimed with an owner-checked lease</span>
+          <span className="stat-hint">Tomados con arriendo verificado por propietario</span>
         </article>
         <article className="card stat">
-          <span className="stat-label">Auditors online</span>
+          <span className="stat-label">Auditores en línea</span>
           <strong className="stat-value">{formatNumber(counts.auditorsOnline)}</strong>
-          <span className="stat-hint">Presence TTL 45 s, swept every 5 s</span>
+          <span className="stat-hint">TTL de presencia 45 s, barrido cada 5 s</span>
         </article>
         <article className="card stat">
-          <span className="stat-label">Resolved by you</span>
+          <span className="stat-label">Resueltos por ti</span>
           <strong className="stat-value">{formatNumber(snapshot?.stats?.resolved ?? 0)}</strong>
-          <span className="stat-hint">{myCases.length} case(s) currently held</span>
+          <span className="stat-hint">{myCases.length} caso(s) retenido(s) ahora</span>
         </article>
       </section>
 
@@ -379,21 +380,21 @@ export const VerifyPage = () => {
         <section className="card">
           <header className="card-head">
             <div>
-              <h2 className="card-title">Verification queue</h2>
+              <h2 className="card-title">Cola de verificación</h2>
               <p className="tiny muted">
-                Two auditors on two instances can never receive the same case: the claim is one
-                atomic Lua script.
+                Dos auditores en dos instancias nunca pueden recibir el mismo caso: la toma es un
+                único script Lua atómico.
               </p>
             </div>
-            <span className="tiny muted mono">{cases.length} loaded</span>
+            <span className="tiny muted mono">{cases.length} cargados</span>
           </header>
 
           {cases.length === 0 ? (
             <div className="empty-text">
-              <p>No cases in the queue.</p>
+              <p>No hay casos en la cola.</p>
               <p className="tiny muted">
-                Open the Jury page and submit a “Random doubtful acta”: its accounting mismatch puts
-                it here with a priority derived from the difference.
+                Abre la página de Jurados y envía un «Acta aleatoria dudosa»: su descuadre contable la
+                coloca aquí con una prioridad derivada de la diferencia.
               </p>
             </div>
           ) : (
@@ -405,10 +406,10 @@ export const VerifyPage = () => {
                     <th>Acta</th>
                     <th className="num">Mesa</th>
                     <th className="num">Puesto</th>
-                    <th className="num">Votes vs sufragantes</th>
-                    <th>Reason</th>
-                    <th>Owner</th>
-                    <th className="num">Actions</th>
+                    <th className="num">Votos vs sufragantes</th>
+                    <th>Motivo</th>
+                    <th>Propietario</th>
+                    <th className="num">Acciones</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -431,8 +432,8 @@ export const VerifyPage = () => {
                             {difference === 0 ? ' · ok' : ` · ${difference > 0 ? '+' : ''}${difference}`}
                           </span>
                         </td>
-                        <td className="tiny">{item.reason || 'accounting mismatch'}</td>
-                        <td className="tiny">{item.owner ?? <span className="muted">free</span>}</td>
+                        <td className="tiny">{item.reason || 'descuadre contable'}</td>
+                        <td className="tiny">{item.owner ?? <span className="muted">libre</span>}</td>
                         <td className="num">
                           {item.owner === null ? (
                             <button
@@ -441,7 +442,7 @@ export const VerifyPage = () => {
                               disabled={claiming === item.actaId || socket.status !== 'open'}
                               onClick={() => claim(item.actaId)}
                             >
-                              {claiming === item.actaId ? 'Claiming…' : 'Claim'}
+                              {claiming === item.actaId ? 'Tomando…' : 'Tomar'}
                             </button>
                           ) : mine ? (
                             <span className="inline">
@@ -450,18 +451,18 @@ export const VerifyPage = () => {
                                 className="btn btn-sm btn-primary"
                                 onClick={() => complete(item.actaId)}
                               >
-                                Complete
+                                Completar
                               </button>
                               <button
                                 type="button"
                                 className="btn btn-sm btn-ghost"
                                 onClick={() => release(item.actaId)}
                               >
-                                Release
+                                Liberar
                               </button>
                             </span>
                           ) : (
-                            <span className="tiny muted">held</span>
+                            <span className="tiny muted">ocupado</span>
                           )}
                         </td>
                       </tr>
@@ -476,11 +477,11 @@ export const VerifyPage = () => {
         <div className="stack">
           <section className="card">
             <header className="card-head">
-              <h2 className="card-title">Your active cases</h2>
+              <h2 className="card-title">Tus casos activos</h2>
               <span className="tiny muted">{myCases.length}</span>
             </header>
             {myCases.length === 0 ? (
-              <p className="empty-text">Nothing claimed. Claim a case to start reviewing.</p>
+              <p className="empty-text">Nada tomado. Toma un caso para empezar a revisar.</p>
             ) : (
               <ul className="list">
                 {myCases.map((actaId) => {
@@ -492,7 +493,7 @@ export const VerifyPage = () => {
                         {item ? (
                           <span className="tiny muted">
                             {formatNumber(item.mesa)} / {formatNumber(item.puesto)} ·{' '}
-                            {sumVotes(item.votes ?? {})} votes
+                            {sumVotes(item.votes ?? {})} votos
                           </span>
                         ) : null}
                       </span>
@@ -502,14 +503,14 @@ export const VerifyPage = () => {
                           className="btn btn-sm btn-primary"
                           onClick={() => complete(actaId)}
                         >
-                          Complete
+                          Completar
                         </button>
                         <button
                           type="button"
                           className="btn btn-sm btn-ghost"
                           onClick={() => release(actaId)}
                         >
-                          Release
+                          Liberar
                         </button>
                       </span>
                     </li>
@@ -521,11 +522,11 @@ export const VerifyPage = () => {
 
           <section className="card">
             <header className="card-head">
-              <h2 className="card-title">Roster</h2>
-              <span className="tiny muted">{roster.length} online</span>
+              <h2 className="card-title">Nómina</h2>
+              <span className="tiny muted">{roster.length} en línea</span>
             </header>
             {roster.length === 0 ? (
-              <p className="empty-text">No auditors connected.</p>
+              <p className="empty-text">No hay auditores conectados.</p>
             ) : (
               <ul className="list roster">
                 {roster.map((auditor) => (
@@ -536,15 +537,15 @@ export const VerifyPage = () => {
                     <span className="list-main">
                       <span className="mono">
                         {auditor.auditorId}
-                        {auditor.auditorId === auditorId ? ' (you)' : ''}
+                        {auditor.auditorId === auditorId ? ' (tú)' : ''}
                       </span>
                       <span className="tiny muted">
-                        {auditor.instanceId} · {auditor.currentActa ?? 'idle'}
+                        {auditor.instanceId} · {auditor.currentActa ?? 'inactivo'}
                       </span>
                     </span>
                     <span className="list-meta">
-                      <span className="tiny muted">busy {formatDuration(auditor.busyForMs)}</span>
-                      <span className="tiny muted">online {formatDuration(auditor.onlineForMs)}</span>
+                      <span className="tiny muted">ocupado {formatDuration(auditor.busyForMs)}</span>
+                      <span className="tiny muted">en línea {formatDuration(auditor.onlineForMs)}</span>
                     </span>
                   </li>
                 ))}
@@ -554,11 +555,11 @@ export const VerifyPage = () => {
 
           <section className="card">
             <header className="card-head">
-              <h2 className="card-title">Event log</h2>
-              <span className="tiny muted">last {events.length}</span>
+              <h2 className="card-title">Registro de eventos</h2>
+              <span className="tiny muted">últimos {events.length}</span>
             </header>
             {events.length === 0 ? (
-              <p className="empty-text">Waiting for the first server event.</p>
+              <p className="empty-text">Esperando el primer evento del servidor.</p>
             ) : (
               <ul className="log">
                 {events.map((entry, index) => (

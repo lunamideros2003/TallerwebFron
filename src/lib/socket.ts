@@ -33,20 +33,20 @@ export class ReconnectingSocket {
     ) {
       return;
     }
-    this.options.onStatus?.('connecting', 'opening socket');
+    this.options.onStatus?.('connecting', 'abriendo conexión');
 
     let socket: WebSocket;
     try {
       socket = new WebSocket(this.options.url);
     } catch (error) {
-      this.scheduleReconnect(error instanceof Error ? error.message : 'invalid URL');
+      this.scheduleReconnect(error instanceof Error ? error.message : 'URL inválida');
       return;
     }
     this.socket = socket;
 
     socket.onopen = () => {
       this.attempt = 0;
-      this.options.onStatus?.('open', 'socket open');
+      this.options.onStatus?.('open', 'conexión abierta');
       this.options.onOpen?.();
       if (this.options.ping && this.options.ping.intervalMs > 0) {
         const ping = this.options.ping;
@@ -71,10 +71,10 @@ export class ReconnectingSocket {
       this.stopPing();
       this.socket = null;
       if (this.manualClose) {
-        this.options.onStatus?.('closed', 'closed by client');
+        this.options.onStatus?.('closed', 'cerrada por el cliente');
         return;
       }
-      const reason = event.reason || `socket closed (code ${event.code})`;
+      const reason = event.reason || `conexión cerrada (código ${event.code})`;
       this.scheduleReconnect(reason);
     };
   }
@@ -85,7 +85,7 @@ export class ReconnectingSocket {
     const delay = fullJitter(this.attempt - 1);
     this.options.onStatus?.(
       'closed',
-      `${reason}; retrying in ${describeDelay(delay)} (attempt ${this.attempt})`,
+      `${reason}; reintentando en ${describeDelay(delay)} (intento ${this.attempt})`,
     );
     this.reconnectTimer = window.setTimeout(() => {
       this.reconnectTimer = null;
@@ -134,7 +134,7 @@ export const useReconnectingSocket = (
   options: { pingMs?: number; onOpen?: () => void } = {},
 ): SocketHandle => {
   const [status, setStatus] = useState<SocketStatus>('connecting');
-  const [detail, setDetail] = useState('opening socket');
+  const [detail, setDetail] = useState('abriendo conexión');
   const socketRef = useRef<ReconnectingSocket | null>(null);
 
   const messageRef = useRef(onMessage);

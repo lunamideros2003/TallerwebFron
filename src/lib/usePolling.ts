@@ -37,7 +37,7 @@ export const usePolling = <T,>(path: string, intervalMs: number): PollResult<T> 
       setUpdatedAt(Date.now());
     } catch (requestError) {
       if (!mounted.current) return;
-      setError(requestError instanceof Error ? requestError.message : 'Request failed');
+      setError(requestError instanceof Error ? requestError.message : 'La solicitud falló');
     } finally {
       if (mounted.current) setLoading(false);
     }

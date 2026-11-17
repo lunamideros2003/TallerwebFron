@@ -40,7 +40,7 @@ export const Sparkline = ({ values, tone = 'info', height = 44, max, label }: Sp
         width="100%"
         height={height}
         role="img"
-        aria-label={label ?? 'sparkline'}
+        aria-label={label ?? 'minigráfico'}
         preserveAspectRatio="none"
       >
         <line
@@ -62,7 +62,7 @@ export const Sparkline = ({ values, tone = 'info', height = 44, max, label }: Sp
           />
         ) : null}
       </svg>
-      <span className="spark-peak">peak {Math.round(peak)}</span>
+      <span className="spark-peak">pico {Math.round(peak)}</span>
     </div>
   );
 };

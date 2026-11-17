@@ -5,24 +5,24 @@ export const VOTE_CODES = [...CANDIDATES, ...SPECIAL_VOTES];
 export const voteLabel = (code: string): string => {
   switch (code) {
     case 'BLANCO':
-      return 'Blank ballots';
+      return 'Votos en blanco';
     case 'NULO':
-      return 'Null ballots';
+      return 'Votos nulos';
     case 'NO_MARCADO':
-      return 'Unmarked ballots';
+      return 'Votos no marcados';
     default:
-      return `Candidate ${code}`;
+      return `Candidato ${code}`;
   }
 };
 
 export const shortVoteLabel = (code: string): string => {
   switch (code) {
     case 'BLANCO':
-      return 'Blank';
+      return 'Blanco';
     case 'NULO':
-      return 'Null';
+      return 'Nulo';
     case 'NO_MARCADO':
-      return 'Unmarked';
+      return 'No marcado';
     default:
       return code;
   }
@@ -35,9 +35,9 @@ export const sumVotes = (votes: Record<string, number>): number =>
   VOTE_CODES.reduce((total, code) => total + Number(votes[code] ?? 0), 0);
 
 export const topicLabel = (topic: string): string => {
-  if (topic === 'dept') return 'Whole department';
+  if (topic === 'dept') return 'Todo el departamento';
   const [prefix, value] = topic.split(':');
-  if (prefix === 'mun') return `Municipality ${value}`;
-  if (prefix === 'puesto') return `Polling station ${value}`;
+  if (prefix === 'mun') return `Municipio ${value}`;
+  if (prefix === 'puesto') return `Puesto ${value}`;
   return topic;
 };

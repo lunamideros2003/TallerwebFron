@@ -54,9 +54,9 @@ export const request = async <T>(
   } catch (error) {
     if (error instanceof ApiError) throw error;
     if (error instanceof DOMException && error.name === 'AbortError') {
-      throw new ApiError('Request timed out. Is the backend reachable?', 0, null);
+      throw new ApiError('La solicitud expiró. ¿El backend es accesible?', 0, null);
     }
-    throw new ApiError(error instanceof Error ? error.message : 'Network error', 0, null);
+    throw new ApiError(error instanceof Error ? error.message : 'Error de red', 0, null);
   } finally {
     window.clearTimeout(timer);
   }

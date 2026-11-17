@@ -53,22 +53,22 @@ const describeResult = (result: ActaResult): string => {
   switch (result.status) {
     case 'accepted':
       return result.doubtful
-        ? 'Registered. Flagged for verification because the accounting rule failed.'
-        : 'Registered and counted.';
+        ? 'Registrada. Marcada para verificación porque no se cumplió la regla de cuadre.'
+        : 'Registrada y contada.';
     case 'duplicate':
-      return `Already registered at version ${result.registeredVersion ?? result.version ?? '?'}. Votes were not counted twice.`;
+      return `Ya registrada en la versión ${result.registeredVersion ?? result.version ?? '?'}. Los votos no se contaron dos veces.`;
     case 'superseded':
-      return `Version superseded by ${result.registeredVersion ?? 'a newer version'}. Totals did not move backwards.`;
+      return `Versión reemplazada por ${result.registeredVersion ?? 'una versión más reciente'}. Los totales no retrocedieron.`;
     case 'rejected':
-      return result.message ?? 'The registry rejected the acta.';
+      return result.message ?? 'El registro rechazó el acta.';
     case 'conflict':
-      return 'This idempotency key belongs to another acta.';
+      return 'Esta clave de idempotencia pertenece a otra acta.';
     case 'rate_limited':
-      return 'Rate limited. The outbox keeps the acta and retries with the same key.';
+      return 'Límite de tasa alcanzado. La bandeja de salida conserva el acta y reintenta con la misma clave.';
     case 'unavailable':
-      return 'Registry unavailable. The acta was NOT stored; retrying with idempotency.';
+      return 'Registro no disponible. El acta NO se guardó; se reintenta con idempotencia.';
     default:
-      return result.message ?? 'Unknown result.';
+      return result.message ?? 'Resultado desconocido.';
   }
 };
 
@@ -77,6 +77,12 @@ const statusTone = (status: OutboxStatus) => {
   if (status === 'duplicate' || status === 'superseded') return 'info';
   if (status === 'rejected' || status === 'conflict' || status === 'error') return 'bad';
   return 'warn';
+};
+
+const socketLabel = (status: string) => {
+  if (status === 'open') return 'abierta';
+  if (status === 'connecting') return 'conectando';
+  return 'cerrada';
 };
 
 const storedJuror = (): string => {
@@ -166,7 +172,7 @@ export const JuryPage = () => {
           status: 'queued',
           channel: current.channel,
           message:
-            'No acknowledgement within 12 s. Will retry with the same idempotency key, so it cannot be counted twice.',
+            'Sin acuse de recibo en 12 s. Se reintentará con la misma clave de idempotencia, así no se contará dos veces.',
           nextAttemptAt: Date.now() + 1500,
         });
       }, 12_000);
@@ -189,12 +195,12 @@ export const JuryPage = () => {
           }
         }
         const status = error instanceof ApiError ? error.status : 0;
-        const message = error instanceof Error ? error.message : 'Network error';
+        const message = error instanceof Error ? error.message : 'Error de red';
         if (status === 0 || status >= 500 || status === 429) {
           updateEntry(entry.requestId, {
             status: 'queued',
             channel: 'http',
-            message: `${message}. Retrying with the same idempotency key.`,
+            message: `${message}. Reintentando con la misma clave de idempotencia.`,
             nextAttemptAt: Date.now() + (status === 429 ? 5000 : 3000),
           });
           return;
@@ -270,7 +276,7 @@ export const JuryPage = () => {
       }
       if (payload.type === 'pong') return;
       if (payload.type === 'error') {
-        setSocketError(payload.message ?? 'Unexpected socket error');
+        setSocketError(payload.message ?? 'Error inesperado de la conexión');
         return;
       }
       if (payload.type === 'ack' && payload.requestId) {
@@ -369,27 +375,27 @@ export const JuryPage = () => {
     const sufragantes = Number.parseInt(draft.sufragantes, 10);
 
     if (!Number.isInteger(mesa) || mesa < 1) {
-      setFormError('Mesa must be a positive integer.');
+      setFormError('La mesa debe ser un entero positivo.');
       return null;
     }
     if (!Number.isInteger(puesto) || puesto < 1) {
-      setFormError('Puesto must be a positive integer.');
+      setFormError('El puesto debe ser un entero positivo.');
       return null;
     }
     if (!Number.isInteger(municipio) || municipio < 1) {
-      setFormError('Municipality must be a positive integer.');
+      setFormError('El municipio debe ser un entero positivo.');
       return null;
     }
     if (!Number.isInteger(version) || version < 1) {
-      setFormError('Version must be an integer greater than or equal to 1.');
+      setFormError('La versión debe ser un entero mayor o igual a 1.');
       return null;
     }
     if (!Number.isInteger(sufragantes) || sufragantes < 0) {
-      setFormError('Sufragantes must be a non-negative integer.');
+      setFormError('Los sufragantes deben ser un entero no negativo.');
       return null;
     }
     if (jurorId.trim().length < 3) {
-      setFormError('The juror id must have at least 3 characters.');
+      setFormError('El id del jurado debe tener al menos 3 caracteres.');
       return null;
     }
 
@@ -397,7 +403,7 @@ export const JuryPage = () => {
     for (const code of VOTE_CODES) {
       const value = Number.parseInt(draft.votes[code] ?? '0', 10);
       if (!Number.isInteger(value) || value < 0) {
-        setFormError(`Votes for ${voteLabel(code)} must be a non-negative integer.`);
+        setFormError(`Los votos de ${voteLabel(code)} deben ser un entero no negativo.`);
         return null;
       }
       votes[code] = value;
@@ -433,7 +439,7 @@ export const JuryPage = () => {
       updatedAt: Date.now(),
       nextAttemptAt: 0,
       channel: null,
-      message: 'Queued in the local outbox',
+      message: 'Encolada en la bandeja de salida local',
     };
     commit([...entriesRef.current, entry]);
     void flush();
@@ -442,7 +448,7 @@ export const JuryPage = () => {
   const applyJuror = () => {
     const value = jurorDraft.trim().toUpperCase();
     if (value.length < 3) {
-      setFormError('The juror id must have at least 3 characters.');
+      setFormError('El id del jurado debe tener al menos 3 caracteres.');
       return;
     }
     try {
@@ -482,7 +488,7 @@ export const JuryPage = () => {
   };
 
   const retryEntry = (requestId: string) => {
-    updateEntry(requestId, { status: 'queued', nextAttemptAt: 0, message: 'Retry requested' });
+    updateEntry(requestId, { status: 'queued', nextAttemptAt: 0, message: 'Reintento solicitado' });
     void flush();
   };
 
@@ -525,25 +531,27 @@ export const JuryPage = () => {
     <>
       <section className="hero">
         <div>
-          <p className="eyebrow">Jury channel · WebSocket</p>
-          <h1>Submit an acta</h1>
+          <p className="eyebrow">Canal de jurados · WebSocket</p>
+          <h1>Enviar un acta</h1>
           <p className="muted">
-            One request, one explicit verdict. Every submission lives in a local outbox until the
-            backend confirms it, and retries reuse the same idempotency key.
+            Una solicitud, un veredicto explícito. Cada envío permanece en una bandeja de salida local
+            hasta que el backend lo confirma, y los reintentos reutilizan la misma clave de
+            idempotencia.
           </p>
         </div>
         <div className="hero-side">
           <Pill tone={toneForStream(socket.status)} title={socket.detail}>
-            {socket.status === 'open' ? 'Socket open' : socket.status === 'connecting' ? 'Connecting' : 'Reconnecting'}
+            {socket.status === 'open' ? 'Conexión abierta' : socket.status === 'connecting' ? 'Conectando' : 'Reconectando'}
           </Pill>
-          <Pill tone={online ? 'live' : 'bad'}>{online ? 'Network online' : 'Offline'}</Pill>
+          <Pill tone={online ? 'live' : 'bad'}>{online ? 'Red en línea' : 'Sin conexión'}</Pill>
         </div>
       </section>
 
       {!online ? (
         <div className="banner banner-warn">
-          You are offline. New actas stay in the outbox in <span className="mono">localStorage</span> and
-          are flushed automatically when the connection returns.
+          Estás sin conexión. Las actas nuevas quedan en la bandeja de salida en{' '}
+          <span className="mono">localStorage</span> y se envían automáticamente cuando vuelve la
+          conexión.
         </div>
       ) : null}
 
@@ -554,10 +562,10 @@ export const JuryPage = () => {
         <section className="card">
           <header className="card-head">
             <div>
-              <h2 className="card-title">Acta data entry</h2>
+              <h2 className="card-title">Ingreso de datos del acta</h2>
               <p className="tiny muted">
-                The acta id is derived from puesto and mesa. Changing the version records a
-                correction instead of a new table.
+                El id del acta se deriva del puesto y la mesa. Cambiar la versión registra una
+                corrección en lugar de una mesa nueva.
               </p>
             </div>
             <span className="mono tiny">{actaPreview}</span>
@@ -586,7 +594,7 @@ export const JuryPage = () => {
                 />
               </label>
               <label className="field">
-                <span className="field-label">Municipality</span>
+                <span className="field-label">Municipio</span>
                 <input
                   type="number"
                   min={1}
@@ -596,7 +604,7 @@ export const JuryPage = () => {
                 />
               </label>
               <label className="field">
-                <span className="field-label">Version</span>
+                <span className="field-label">Versión</span>
                 <input
                   type="number"
                   min={1}
@@ -616,10 +624,10 @@ export const JuryPage = () => {
             </div>
 
             <div className="votes-head">
-              <h3>Votes</h3>
+              <h3>Votos</h3>
               <span className={`balance ${balanced ? 'ok' : 'warn'}`}>
-                {formatNumber(votesTotal)} / {formatNumber(declared)} votes
-                {balanced ? ' · accounting rule satisfied' : ' · mismatch, will need verification'}
+                {formatNumber(votesTotal)} / {formatNumber(declared)} votos
+                {balanced ? ' · regla de cuadre cumplida' : ' · descuadre, requerirá verificación'}
               </span>
             </div>
 
@@ -644,13 +652,13 @@ export const JuryPage = () => {
 
             <div className="form-actions">
               <button type="submit" className="btn btn-primary">
-                Queue acta and send
+                Encolar acta y enviar
               </button>
               <button type="button" className="btn btn-ghost" onClick={() => randomize(false)}>
-                Random valid acta
+                Acta aleatoria válida
               </button>
               <button type="button" className="btn btn-ghost" onClick={() => randomize(true)}>
-                Random doubtful acta
+                Acta aleatoria dudosa
               </button>
               <button
                 type="button"
@@ -660,7 +668,7 @@ export const JuryPage = () => {
                   setFormError(null);
                 }}
               >
-                Reset form
+                Reiniciar formulario
               </button>
             </div>
           </form>
@@ -669,66 +677,66 @@ export const JuryPage = () => {
         <div className="stack">
           <section className="card">
             <header className="card-head">
-              <h2 className="card-title">Juror session</h2>
-              <Pill tone={toneForStream(socket.status)}>{socket.status}</Pill>
+              <h2 className="card-title">Sesión del jurado</h2>
+              <Pill tone={toneForStream(socket.status)}>{socketLabel(socket.status)}</Pill>
             </header>
 
             <div className="inline">
               <input
                 value={jurorDraft}
                 onChange={(event) => setJurorDraft(event.target.value)}
-                aria-label="Juror id"
+                aria-label="Id del jurado"
                 placeholder="JUR-0001"
               />
               <button type="button" className="btn btn-ghost" onClick={applyJuror}>
-                Apply
+                Aplicar
               </button>
             </div>
             <p className="tiny muted">
-              The id is sent on the upgrade request and used for the per-juror rate limit.
+              El id se envía en la solicitud de conexión y se usa para el límite de tasa por jurado.
             </p>
 
             <dl className="kv">
               <div className="kv-row">
-                <dt>Socket</dt>
+                <dt>Conexión</dt>
                 <dd>{socket.detail}</dd>
               </div>
               <div className="kv-row">
-                <dt>Instance</dt>
+                <dt>Instancia</dt>
                 <dd className="mono">{hello?.instanceId ?? '—'}</dd>
               </div>
               <div className="kv-row">
-                <dt>Registered as</dt>
+                <dt>Registrado como</dt>
                 <dd className="mono">{hello?.jurorId ?? jurorId}</dd>
               </div>
               <div className="kv-row">
-                <dt>Transport</dt>
-                <dd>WebSocket · HTTP fallback</dd>
+                <dt>Transporte</dt>
+                <dd>WebSocket · Respaldo HTTP</dd>
               </div>
             </dl>
           </section>
 
           <section className="card">
             <header className="card-head">
-              <h2 className="card-title">Outbox</h2>
+              <h2 className="card-title">Bandeja de salida</h2>
               <span className="tiny muted">
-                {formatNumber(queuedCount)} queued · {formatNumber(deliveredCount)} confirmed ·{' '}
-                {formatNumber(failedCount)} failed
+                {formatNumber(queuedCount)} en cola · {formatNumber(deliveredCount)} confirmadas ·{' '}
+                {formatNumber(failedCount)} fallidas
               </span>
             </header>
 
             <div className="inline wrap">
               <button type="button" className="btn btn-sm btn-ghost" onClick={retryAll}>
-                Retry queued
+                Reintentar en cola
               </button>
               <button type="button" className="btn btn-sm btn-ghost" onClick={clearFinished}>
-                Clear delivered
+                Limpiar entregadas
               </button>
             </div>
 
             {newestFirst.length === 0 ? (
               <p className="empty-text">
-                Nothing queued yet. Submit an acta and watch the verdict arrive on the socket.
+                Nada en cola todavía. Envía un acta y observa cómo llega el veredicto por la conexión.
               </p>
             ) : (
               <ul className="list outbox">
@@ -743,8 +751,8 @@ export const JuryPage = () => {
                       </div>
                       <p className="tiny muted">{entry.message}</p>
                       <p className="tiny muted">
-                        attempts {entry.attempts} · {timeAgo(entry.updatedAt)} ·{' '}
-                        {formatDuration(Date.now() - entry.createdAt)} old
+                        intentos {entry.attempts} · {timeAgo(entry.updatedAt)} ·{' '}
+                        hace {formatDuration(Date.now() - entry.createdAt)}
                       </p>
                     </div>
                     <div className="outbox-actions">
@@ -754,7 +762,7 @@ export const JuryPage = () => {
                           className="btn btn-sm btn-ghost"
                           onClick={() => retryEntry(entry.requestId)}
                         >
-                          Retry
+                          Reintentar
                         </button>
                       ) : null}
                       <button
@@ -762,7 +770,7 @@ export const JuryPage = () => {
                         className="btn btn-sm btn-ghost"
                         onClick={() => dismissEntry(entry.requestId)}
                       >
-                        Dismiss
+                        Descartar
                       </button>
                     </div>
                   </li>

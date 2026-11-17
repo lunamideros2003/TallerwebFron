@@ -2,10 +2,10 @@ import { NavLink, Outlet } from 'react-router-dom';
 import { API_URL } from '../lib/config';
 
 const LINKS = [
-  { to: '/', label: 'Results', end: true },
-  { to: '/jury', label: 'Jury', end: false },
-  { to: '/verify', label: 'Verification', end: false },
-  { to: '/ops', label: 'Operations', end: false },
+  { to: '/', label: 'Resultados', end: true },
+  { to: '/jury', label: 'Jurados', end: false },
+  { to: '/verify', label: 'Verificación', end: false },
+  { to: '/ops', label: 'Operaciones', end: false },
 ];
 
 export const Shell = () => (
@@ -17,11 +17,11 @@ export const Shell = () => (
         </span>
         <span className="brand-text">
           <strong>Preconteo</strong>
-          <span className="brand-sub">realtime election count</span>
+          <span className="brand-sub">conteo electoral en vivo</span>
         </span>
       </div>
 
-      <nav className="nav" aria-label="Main">
+      <nav className="nav" aria-label="Principal">
         {LINKS.map((link) => (
           <NavLink
             key={link.to}
@@ -35,7 +35,7 @@ export const Shell = () => (
       </nav>
 
       <div className="topbar-meta">
-        <span className="api-chip mono" title="Backend base URL (VITE_API_URL)">
+        <span className="api-chip mono" title="URL base del backend (VITE_API_URL)">
           {API_URL.replace(/^https?:\/\//, '')}
         </span>
       </div>
@@ -47,10 +47,10 @@ export const Shell = () => (
 
     <footer className="footer">
       <span>
-        Informational preconteo. The official count is manual and happens on the physical actas.
+        Preconteo informativo. El conteo oficial es manual y se realiza sobre las actas físicas.
       </span>
       <span className="mono tiny">
-        SSE + WebSocket + HTTP · Redis backplane · 8 stateless instances
+        SSE + WebSocket + HTTP · Backplane Redis · 8 instancias sin estado
       </span>
     </footer>
   </div>
